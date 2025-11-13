@@ -3,6 +3,7 @@ import asyncio
 from datetime import datetime
 import json
 from concurrent.futures import ThreadPoolExecutor
+import shutil
 
 import feedparser
 from newspaper import Article, ArticleException
@@ -40,6 +41,7 @@ REPORTS_CONFIG = [
 MAX_ARTICLES_PER_FEED = 20  # Increase the number of articles to get better coverage
 MAX_CONCURRENT_WORKERS = 10
 OUTPUT_DIR = "reports"
+PUBLISH_DIR = "."  # GitHub Pages가 읽는 루트에 최신본 복사
 
 # --- Article Fetching and Parsing (Adapted from backend/main.py) ---
 
@@ -291,7 +293,14 @@ def generate_html_report(report_data: list, report_name: str):
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     with open(filepath, "w", encoding="utf-8") as f:
         f.write(html_content)
-    
+
+    if PUBLISH_DIR:
+        os.makedirs(PUBLISH_DIR, exist_ok=True)
+        publish_path = os.path.join(PUBLISH_DIR, filename)
+        if os.path.abspath(publish_path) != os.path.abspath(filepath):
+            shutil.copyfile(filepath, publish_path)
+            print(f"Published copy: {publish_path}")
+
     print(f"Successfully generated report: {filepath}")
 
 # --- Main Execution ---
