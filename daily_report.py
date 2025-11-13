@@ -119,48 +119,171 @@ def generate_html_report(report_data: list, report_name: str):
     <head>
         <title>{report_name} - {today_str}</title>
         <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <style>
-            body {{ font-family: Arial, sans-serif; margin: 20px; }}
-            h1 {{ color: #333; }}
-            table {{ width: 100%; border-collapse: collapse; }}
-            th, td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
-            th {{ background-color: #f2f2f2; }}
-            tr:nth-child(even) {{ background-color: #f9f9f9; }}
-            a {{ color: #0066cc; text-decoration: none; }}
-            a:hover {{ text-decoration: underline; }}
+            :root {{
+                color-scheme: dark;
+                font-family: 'Pretendard', 'Noto Sans KR', 'SUIT', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+                --bg: #050505;
+                --panel: #0f1117;
+                --border: #1f2430;
+                --text: #f5f7ff;
+                --muted: #a0a7be;
+                --accent: #6ea9ff;
+            }}
+            body {{
+                margin: 0;
+                min-height: 100vh;
+                padding: 2.5rem 1.6rem 3rem;
+                background: var(--bg);
+                color: var(--text);
+                line-height: 1.65;
+                display: flex;
+                justify-content: center;
+            }}
+            main {{
+                width: min(960px, 100%);
+                display: flex;
+                flex-direction: column;
+                gap: 1.5rem;
+            }}
+            h1 {{
+                margin: 0;
+                font-size: clamp(2rem, 5vw, 2.9rem);
+            }}
+            .table-wrap {{
+                background: var(--panel);
+                border-radius: 1.1rem;
+                border: 1px solid var(--border);
+                overflow: hidden;
+                box-shadow: 0 25px 60px rgba(0,0,0,.5);
+            }}
+            table {{
+                width: 100%;
+                border-collapse: collapse;
+            }}
+            thead {{
+                background: #131722;
+            }}
+            th {{
+                padding: 1rem 1.2rem;
+                text-align: left;
+                font-weight: 600;
+                letter-spacing: 0.02em;
+                color: var(--muted);
+            }}
+            td {{
+                padding: 1rem 1.2rem;
+                border-top: 1px solid var(--border);
+                vertical-align: top;
+            }}
+            tr:first-child td {{
+                border-top: none;
+            }}
+            td.date {{
+                width: 8rem;
+                color: var(--muted);
+                font-feature-settings: 'tnum';
+                font-weight: 500;
+            }}
+            td.summary {{
+                font-size: 1.05rem;
+            }}
+            td.summary p {{
+                margin: 0.4rem 0 0;
+                color: var(--muted);
+            }}
+            .keyword-pill {{
+                display: inline-block;
+                margin: 0 0.3rem 0.35rem 0;
+                padding: 0.25rem 0.6rem;
+                border-radius: 999px;
+                background: rgba(110,169,255,0.12);
+                color: var(--accent);
+                font-size: 0.78rem;
+                font-weight: 500;
+            }}
+            a.headline {{
+                display: inline-block;
+                color: var(--text);
+                font-weight: 600;
+                text-decoration: none;
+                margin-top: 0.15rem;
+            }}
+            a.headline:hover {{ color: var(--accent); }}
+            .source {{
+                text-align: center;
+                white-space: nowrap;
+            }}
+            a.source-pill {{
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-width: 5rem;
+                padding: 0.45rem 0.9rem;
+                border-radius: 999px;
+                background: #1a1f2b;
+                color: var(--muted);
+                text-decoration: none;
+                font-weight: 600;
+                letter-spacing: 0.02em;
+            }}
+            a.source-pill:hover {{
+                background: #252c3d;
+                color: var(--text);
+            }}
+            @media (max-width: 680px) {{
+                body {{ padding: 1.5rem 1.1rem 2.5rem; }}
+                main {{ gap: 1rem; }}
+                th, td {{ padding: 0.85rem; }}
+                td.summary {{ font-size: 1rem; }}
+                .table-wrap {{ border-radius: 0.9rem; box-shadow: none; }}
+            }}
         </style>
     </head>
     <body>
-        <h1>{report_name} ({today_str})</h1>
-        <table>
-            <thead>
-                <tr>
-                    <th>날짜</th>
-                    <th>주요 키워드</th>
-                    <th>제목 / 요약</th>
-                    <th>출처</th>
-                </tr>
-            </thead>
-            <tbody>
+        <main>
+            <h1>{report_name} ({today_str})</h1>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>날짜</th>
+                            <th>제목 / 요약</th>
+                            <th>출처</th>
+                        </tr>
+                    </thead>
+                    <tbody>
     """
 
     for item in report_data:
+        keywords = item.get("keywords", "")
+        keyword_html = "".join(
+            f'<span class="keyword-pill">{kw.strip()}</span>'
+            for kw in keywords.split(",") if kw.strip()
+        )
+        source_label = item.get("source", "출처")
+        summary_text = item.get("summary", "")
+
         html_content += f"""
-                <tr>
-                    <td>{item['date']}</td>
-                    <td>{item['keywords']}</td>
-                    <td>
-                        <strong><a href="{item['link']}" target="_blank">{item['title']}</a></strong>
-                        <br>
-                        {item['summary']}
-                    </td>
-                    <td>{item['source']}</td>
-                </tr>
+                        <tr>
+                            <td class="date">{item['date']}</td>
+                            <td class="summary">
+                                {keyword_html}
+                                <a class="headline" href="{item['link']}" target="_blank" rel="noopener">{item['title']}</a>
+                                <p>{summary_text}</p>
+                            </td>
+                            <td class="source">
+                                <a class="source-pill" href="{item['link']}" target="_blank" rel="noopener">{source_label}</a>
+                            </td>
+                        </tr>
         """
 
     html_content += """
-            </tbody>
-        </table>
+                    </tbody>
+                </table>
+            </div>
+        </main>
     </body>
     </html>
     """

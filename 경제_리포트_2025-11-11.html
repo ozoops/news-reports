@@ -24,7 +24,9 @@
                 color: var(--text);
                 line-height: 1.6;
                 display: flex;
-                justify-content: center;
+                flex-direction: column;
+                align-items: center;
+                justify-content: flex-start;
             }
             main {
                 width: min(960px, 100%);
@@ -106,10 +108,11 @@
   </style>
  </head>
  <body>
-  <h1>
+  <main>
+   <h1>
    경제_리포트 (2025-11-11)
-  </h1>
-  <table>
+   </h1>
+   <table>
    <thead>
     <tr>
      <th>
@@ -291,5 +294,6 @@
     </tr>
    </tbody>
   </table>
+  </main>
  </body>
 </html>
